@@ -8,14 +8,12 @@ background:#0f172a;
 color:white;
 padding:15px;
 }
-
 .card{
 background:#1e293b;
 padding:15px;
 border-radius:12px;
 margin-top:10px;
 }
-
 input,select,button{
 width:100%;
 padding:10px;
@@ -23,23 +21,19 @@ margin:5px 0;
 border-radius:8px;
 border:none;
 }
-
 button{
 background:#22c55e;
 color:white;
 font-weight:bold;
 }
-
 .delete{
 background:#ef4444;
 }
-
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
 }
-
 .footer{
 text-align:center;
 margin-top:20px;
@@ -67,10 +61,10 @@ color:#94a3b8;
 <input type="number" id="P" placeholder="Production">
 <input type="number" id="NQ" placeholder="Non Quality">
 <input type="number" id="cadence" placeholder="Cadence (bph)">
-</div><button onclick="calc()">Calculate</button>
-<button onclick="saveData()">Save</button>
-<button onclick="exportCSV()">Export Excel</button>
-<button onclick="resetForm()">Reset</button>
+</div><button id="calcBtn">Calculate</button>
+<button id="saveBtn">Save</button>
+<button id="exportBtn">Export Excel</button>
+<button id="resetBtn">Reset</button>
 
 <div class="card">
 <p>TRS: <span id="trs">0</span>%</p>
@@ -87,6 +81,8 @@ let currentData = null;
 
 // CALCULATION
 function calc(){
+
+console.log("CALC WORKING");
 
 let TT = Number(document.getElementById("TT").value);
 let TO = Number(document.getElementById("TO").value);
@@ -138,7 +134,6 @@ trg: trg
 // SAVE
 function saveData(){
 if(!currentData){alert("Calculate first"); return;}
-
 historyData.push(currentData);
 localStorage.setItem("trsData", JSON.stringify(historyData));
 render();
@@ -195,10 +190,11 @@ document.getElementById("trg").innerText = "0";
 document.getElementById("alert").innerText = "";
 }
 
-// AUTO CALC
-document.querySelectorAll("input").forEach(i=>{
-i.addEventListener("input", calc);
-});
+// EVENTS (🔥 الحل)
+document.getElementById("calcBtn").addEventListener("click", calc);
+document.getElementById("saveBtn").addEventListener("click", saveData);
+document.getElementById("exportBtn").addEventListener("click", exportCSV);
+document.getElementById("resetBtn").addEventListener("click", resetForm);
 
 // LOAD
 render();

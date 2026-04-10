@@ -1,181 +1,50 @@
 <!DOCTYPE html><html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TRS / TRG Monitoring PRO</title><!-- ✅ FIX GitHub Pages --><link rel="manifest" href="/Trstrg_app/manifest.json">
-<meta name="theme-color" content="#22c55e"><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRS Calculator</title><style>
 body{font-family:Arial;background:#0f172a;color:white;padding:15px;}
-.card{background:#1e293b;padding:15px;border-radius:12px;margin-top:10px;}
-input,select,button{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:none;}
+input,button{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:none;}
 button{background:#22c55e;color:white;font-weight:bold;}
-.delete{background:#ef4444;}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.footer{text-align:center;margin-top:20px;color:#94a3b8;}
 </style></head>
-<body><h2>🏭 TRS / TRG Monitoring PRO</h2>
-<p style="color:#94a3b8;">Developed by <b>SAAD DAMOU</b></p><div class="card">
-<input type="date" id="date"><select id="shift">
-<option>Shift 1</option>
-<option>Shift 2</option>
-<option>Shift 3</option>
-</select><select id="ligne">
-<option>Ligne 11</option><option>Ligne 4</option><option>Ligne 6</option>
-<option>Ligne 13</option><option>Ligne 12</option><option>Ligne 7</option>
-<option>Ligne 10</option><option>Ligne 8</option><option>Ligne 9</option>
-<option>Ligne 14</option><option>LV3</option><option>VPF</option><option>VGF</option>
-</select>
-</div><div class="card grid">
-<input type="number" id="TT" placeholder="Total Time (h)">
-<input type="number" id="TO" placeholder="Opening Time (h)">
-<input type="number" id="AP" placeholder="Planned Stop (h)">
-<input type="number" id="ANP" placeholder="Unplanned Stop (h)">
-</div><div class="card grid">
+<body><h2>TRS Test</h2><input type="number" id="TT" placeholder="TT">
+<input type="number" id="TO" placeholder="TO">
+<input type="number" id="AP" placeholder="AP">
+<input type="number" id="ANP" placeholder="ANP">
 <input type="number" id="P" placeholder="Production">
-<input type="number" id="NQ" placeholder="Non Quality">
-<input type="number" id="cadence" placeholder="Cadence (bph)">
-</div><button onclick="calc()">Calculate</button>
-<button onclick="saveData()">Save</button>
-<button onclick="exportCSV()">Export Excel</button>
-<button onclick="resetForm()">Reset</button>
+<input type="number" id="NQ" placeholder="NQ">
+<input type="number" id="cadence" placeholder="Cadence"><button onclick="calc()">Calculate</button>
 
-<div class="card">
-<p>TRS: <span id="trs">0</span>%</p>
-<p>TRG: <span id="trg">0</span>%</p>
-<p id="alert"></p>
-</div><div class="card">
-<h3>History</h3>
-<ul id="history"></ul>
-</div><div class="footer">© 2026 SAAD DAMOU</div><script>
+<h3 id="result">Result: 0</h3><script>
 
-// 📦 STORAGE
-let historyData = JSON.parse(localStorage.getItem("trsData")) || [];
-let currentData = null;
-
-// ✅ CALC FIXED + SAFE
 function calc(){
 
-let TT = +document.getElementById("TT").value;
-let TO = +document.getElementById("TO").value;
-let AP = +document.getElementById("AP").value;
-let ANP = +document.getElementById("ANP").value;
-let P = +document.getElementById("P").value;
-let NQ = +document.getElementById("NQ").value;
-let cadence = +document.getElementById("cadence").value;
+let TT = Number(document.getElementById("TT").value);
+let TO = Number(document.getElementById("TO").value);
+let AP = Number(document.getElementById("AP").value);
+let ANP = Number(document.getElementById("ANP").value);
+let P = Number(document.getElementById("P").value);
+let NQ = Number(document.getElementById("NQ").value);
+let cadence = Number(document.getElementById("cadence").value);
 
-// ❗ حماية
 if(!TT || !TO || !cadence){
-document.getElementById("alert").innerText = "❗ Fill required fields";
+document.getElementById("result").innerText = "Fill data";
 return;
 }
 
 let TR = TO - AP;
 let TF = TR - ANP;
-if(TF <= 0) TF = 0.001;
 
-// ✅ FIX division by zero
 let quality = P > 0 ? (P - NQ) / P : 0;
-let prodTheo = (TF * cadence) || 1;
+let prodTheo = TF * cadence;
 
-let availability = TR > 0 ? (TF / TR) * 100 : 0;
-let performance = prodTheo > 0 ? (P / prodTheo) * 100 : 0;
-let qual = quality * 100;
+let availability = TR > 0 ? TF / TR : 0;
+let performance = prodTheo > 0 ? P / prodTheo : 0;
 
-let trs = (availability * performance * qual) / 10000;
-let tc = (TO / TT) * 100;
-let trg = trs * tc / 100;
+let trs = availability * performance * quality * 100;
 
-// limit
-trs = isFinite(trs) ? Math.min(trs,100) : 0;
-trg = isFinite(trg) ? Math.min(trg,100) : 0;
+document.getElementById("result").innerText = "TRS = " + trs.toFixed(2) + "%";
 
-// display
-document.getElementById("trs").innerText = trs.toFixed(2);
-document.getElementById("trg").innerText = trg.toFixed(2);
-
-document.getElementById("alert").innerText =
-trs < 85 ? "⚠️ Low TRS" : "✅ Good Performance";
-
-// save temp
-currentData = {
-date: document.getElementById("date").value,
-ligne: document.getElementById("ligne").value,
-shift: document.getElementById("shift").value,
-trs: trs,
-trg: trg
-};
-
-}
-
-// 💾 SAVE
-function saveData(){
-if(!currentData){alert("Calculate first"); return;}
-
-historyData.push(currentData);
-localStorage.setItem("trsData", JSON.stringify(historyData));
-render();
-}
-
-// 🔄 RENDER
-function render(){
-let ul = document.getElementById("history");
-ul.innerHTML = "";
-
-historyData.forEach((d,i)=>{
-ul.innerHTML += `<li>
-${d.date} | ${d.ligne} | ${d.shift} | TRS ${d.trs.toFixed(2)}%
-<button class="delete" onclick="del(${i})">X</button>
-</li>`;
-});
-}
-
-// ❌ DELETE
-function del(i){
-historyData.splice(i,1);
-localStorage.setItem("trsData", JSON.stringify(historyData));
-render();
-}
-
-// 📊 EXPORT
-function exportCSV(){
-
-if(historyData.length === 0){
-alert("No data");
-return;
-}
-
-let csv = "date,ligne,shift,trs,trg\n";
-
-historyData.forEach(d=>{
-csv += `${d.date},${d.ligne},${d.shift},${d.trs.toFixed(2)},${d.trg.toFixed(2)}\n`;
-});
-
-let blob = new Blob([csv], { type: "text/csv" });
-
-let a = document.createElement("a");
-a.href = URL.createObjectURL(blob);
-a.download = "TRS_Report.csv";
-a.click();
-
-}
-
-// 🔄 RESET
-function resetForm(){
-document.querySelectorAll("input").forEach(i=>i.value="");
-document.getElementById("trs").innerText = "0";
-document.getElementById("trg").innerText = "0";
-document.getElementById("alert").innerText = "";
-}
-
-// ⚡ AUTO CALCULATE
-document.querySelectorAll("input").forEach(i=>{
-i.addEventListener("input", calc);
-});
-
-// 🔁 LOAD
-render();
-
-// 🔥 SERVICE WORKER
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('/Trstrg_app/sw.js');
 }
 
 </script></body>

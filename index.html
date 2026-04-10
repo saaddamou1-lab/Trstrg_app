@@ -46,11 +46,11 @@ button{background:#22c55e;color:white;font-weight:bold;}
 <ul id="history"></ul>
 </div><div class="footer">© 2026 SAAD DAMOU</div><script>
 
-// 🔥 Persistent storage
+// 📦 STORAGE
 let historyData = JSON.parse(localStorage.getItem("trsData")) || [];
 let currentData = null;
 
-// ✅ FIXED CALCULATION
+// ✅ CALC FIXED + SAFE
 function calc(){
 
 let TT = +document.getElementById("TT").value;
@@ -61,7 +61,8 @@ let P = +document.getElementById("P").value;
 let NQ = +document.getElementById("NQ").value;
 let cadence = +document.getElementById("cadence").value;
 
-if(!TT || !TO || !P || !cadence){
+// ❗ حماية
+if(!TT || !TO || !cadence){
 document.getElementById("alert").innerText = "❗ Fill required fields";
 return;
 }
@@ -70,26 +71,30 @@ let TR = TO - AP;
 let TF = TR - ANP;
 if(TF <= 0) TF = 0.001;
 
-let quality = (P - NQ) / P;
-let prodTheo = TF * cadence;
+// ✅ FIX division by zero
+let quality = P > 0 ? (P - NQ) / P : 0;
+let prodTheo = (TF * cadence) || 1;
 
-let availability = (TF / TR) * 100;
-let performance = (P / prodTheo) * 100;
+let availability = TR > 0 ? (TF / TR) * 100 : 0;
+let performance = prodTheo > 0 ? (P / prodTheo) * 100 : 0;
 let qual = quality * 100;
 
 let trs = (availability * performance * qual) / 10000;
 let tc = (TO / TT) * 100;
 let trg = trs * tc / 100;
 
-trs = Math.min(trs,100);
-trg = Math.min(trg,100);
+// limit
+trs = isFinite(trs) ? Math.min(trs,100) : 0;
+trg = isFinite(trg) ? Math.min(trg,100) : 0;
 
+// display
 document.getElementById("trs").innerText = trs.toFixed(2);
 document.getElementById("trg").innerText = trg.toFixed(2);
 
 document.getElementById("alert").innerText =
 trs < 85 ? "⚠️ Low TRS" : "✅ Good Performance";
 
+// save temp
 currentData = {
 date: document.getElementById("date").value,
 ligne: document.getElementById("ligne").value,
@@ -129,7 +134,7 @@ localStorage.setItem("trsData", JSON.stringify(historyData));
 render();
 }
 
-// 📊 EXPORT CSV
+// 📊 EXPORT
 function exportCSV(){
 
 if(historyData.length === 0){
@@ -168,7 +173,7 @@ i.addEventListener("input", calc);
 // 🔁 LOAD
 render();
 
-// 🔥 SERVICE WORKER FIX
+// 🔥 SERVICE WORKER
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('/Trstrg_app/sw.js');
 }

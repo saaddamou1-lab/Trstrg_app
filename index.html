@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TRS / TRG Monitoring PRO</title><link rel="manifest" href="./manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TRS / TRG Monitoring PRO</title><!-- ✅ FIX GitHub Pages --><link rel="manifest" href="/Trstrg_app/manifest.json">
 <meta name="theme-color" content="#22c55e"><style>
 body{font-family:Arial;background:#0f172a;color:white;padding:15px;}
 .card{background:#1e293b;padding:15px;border-radius:12px;margin-top:10px;}
@@ -10,15 +10,14 @@ button{background:#22c55e;color:white;font-weight:bold;}
 .delete{background:#ef4444;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .footer{text-align:center;margin-top:20px;color:#94a3b8;}
-</style></head><body><h2>🏭 TRS / TRG Monitoring PRO</h2>
+</style></head>
+<body><h2>🏭 TRS / TRG Monitoring PRO</h2>
 <p style="color:#94a3b8;">Developed by <b>SAAD DAMOU</b></p><div class="card">
-<input type="date" id="date">
-<select id="shift">
+<input type="date" id="date"><select id="shift">
 <option>Shift 1</option>
 <option>Shift 2</option>
 <option>Shift 3</option>
-</select>
-<select id="ligne">
+</select><select id="ligne">
 <option>Ligne 11</option><option>Ligne 4</option><option>Ligne 6</option>
 <option>Ligne 13</option><option>Ligne 12</option><option>Ligne 7</option>
 <option>Ligne 10</option><option>Ligne 8</option><option>Ligne 9</option>
@@ -36,6 +35,7 @@ button{background:#22c55e;color:white;font-weight:bold;}
 </div><button onclick="calc()">Calculate</button>
 <button onclick="saveData()">Save</button>
 <button onclick="exportCSV()">Export Excel</button>
+<button onclick="resetForm()">Reset</button>
 
 <div class="card">
 <p>TRS: <span id="trs">0</span>%</p>
@@ -46,22 +46,23 @@ button{background:#22c55e;color:white;font-weight:bold;}
 <ul id="history"></ul>
 </div><div class="footer">© 2026 SAAD DAMOU</div><script>
 
-// 🔥 FIX: Persistent storage
+// 🔥 Persistent storage
 let historyData = JSON.parse(localStorage.getItem("trsData")) || [];
 let currentData = null;
 
+// ✅ FIXED CALCULATION
 function calc(){
 
-let TT = +TT.value;
-let TO = +TO.value;
-let AP = +AP.value;
-let ANP = +ANP.value;
-let P = +P.value;
-let NQ = +NQ.value;
-let cadence = +cadence.value;
+let TT = +document.getElementById("TT").value;
+let TO = +document.getElementById("TO").value;
+let AP = +document.getElementById("AP").value;
+let ANP = +document.getElementById("ANP").value;
+let P = +document.getElementById("P").value;
+let NQ = +document.getElementById("NQ").value;
+let cadence = +document.getElementById("cadence").value;
 
 if(!TT || !TO || !P || !cadence){
-alert("Fill all fields");
+document.getElementById("alert").innerText = "❗ Fill required fields";
 return;
 }
 
@@ -99,7 +100,7 @@ trg: trg
 
 }
 
-// 💾 Save + localStorage
+// 💾 SAVE
 function saveData(){
 if(!currentData){alert("Calculate first"); return;}
 
@@ -108,7 +109,7 @@ localStorage.setItem("trsData", JSON.stringify(historyData));
 render();
 }
 
-// 🔄 render
+// 🔄 RENDER
 function render(){
 let ul = document.getElementById("history");
 ul.innerHTML = "";
@@ -121,14 +122,14 @@ ${d.date} | ${d.ligne} | ${d.shift} | TRS ${d.trs.toFixed(2)}%
 });
 }
 
-// ❌ delete
+// ❌ DELETE
 function del(i){
 historyData.splice(i,1);
 localStorage.setItem("trsData", JSON.stringify(historyData));
 render();
 }
 
-// 📊 Export FIXED
+// 📊 EXPORT CSV
 function exportCSV(){
 
 if(historyData.length === 0){
@@ -151,12 +152,25 @@ a.click();
 
 }
 
-// 🔁 load data on start
+// 🔄 RESET
+function resetForm(){
+document.querySelectorAll("input").forEach(i=>i.value="");
+document.getElementById("trs").innerText = "0";
+document.getElementById("trg").innerText = "0";
+document.getElementById("alert").innerText = "";
+}
+
+// ⚡ AUTO CALCULATE
+document.querySelectorAll("input").forEach(i=>{
+i.addEventListener("input", calc);
+});
+
+// 🔁 LOAD
 render();
 
-// 🔥 SERVICE WORKER (IMPORTANT)
+// 🔥 SERVICE WORKER FIX
 if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('./sw.js');
+navigator.serviceWorker.register('/Trstrg_app/sw.js');
 }
 
 </script></body>

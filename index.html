@@ -8,32 +8,52 @@ background:#0f172a;
 color:white;
 padding:15px;
 }
+
 .card{
 background:#1e293b;
 padding:15px;
-border-radius:12px;
+border-radius:15px;
 margin-top:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
 }
-input,select,button{
+
+input,select{
 width:100%;
-padding:10px;
+padding:12px;
 margin:5px 0;
-border-radius:8px;
-border:none;
+border-radius:10px;
+border:1px solid #334155;
+background:#0f172a;
+color:white;
+font-size:14px;
 }
+
+input::placeholder{
+color:#94a3b8;
+}
+
 button{
+width:100%;
+padding:12px;
+margin-top:8px;
+border:none;
+border-radius:10px;
 background:#22c55e;
 color:white;
 font-weight:bold;
+cursor:pointer;
 }
+
 .delete{
 background:#ef4444;
 }
+
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
 }
+
 .footer{
 text-align:center;
 margin-top:20px;
@@ -71,18 +91,22 @@ color:#94a3b8;
 <p>TRG: <span id="trg">0</span>%</p>
 <p id="alert"></p>
 </div><div class="card">
+<h3>Details</h3>
+<p>TR: <span id="TR">0</span></p>
+<p>TF: <span id="TF">0</span></p>
+<p>Availability: <span id="AV">0</span>%</p>
+<p>Performance: <span id="PERF">0</span>%</p>
+<p>Quality: <span id="QUAL">0</span>%</p>
+</div><div class="card">
 <h3>History</h3>
 <ul id="history"></ul>
+<button onclick="clearHistory()" class="delete">Clear History</button>
 </div><div class="footer">© 2026 SAAD DAMOU</div><script>
 
-// STORAGE
 let historyData = JSON.parse(localStorage.getItem("trsData")) || [];
 let currentData = null;
 
-// CALCULATION
 function calc(){
-
-console.log("CALC WORKING");
 
 let TT = Number(document.getElementById("TT").value);
 let TO = Number(document.getElementById("TO").value);
@@ -93,7 +117,7 @@ let NQ = Number(document.getElementById("NQ").value);
 let cadence = Number(document.getElementById("cadence").value);
 
 if(!TT || !TO || !cadence){
-document.getElementById("alert").innerText = "❗ Fill required fields";
+document.getElementById("alert").innerText = "Fill required fields";
 return;
 }
 
@@ -118,8 +142,26 @@ trg = isFinite(trg) ? Math.min(trg,100) : 0;
 document.getElementById("trs").innerText = trs.toFixed(2);
 document.getElementById("trg").innerText = trg.toFixed(2);
 
-document.getElementById("alert").innerText =
-trs < 85 ? "⚠️ Low TRS" : "✅ Good Performance";
+document.getElementById("TR").innerText = TR.toFixed(2);
+document.getElementById("TF").innerText = TF.toFixed(2);
+document.getElementById("AV").innerText = availability.toFixed(2);
+document.getElementById("PERF").innerText = performance.toFixed(2);
+document.getElementById("QUAL").innerText = qual.toFixed(2);
+
+let alertBox = document.getElementById("alert");
+
+if(trs < 60){
+alertBox.innerText = "Critical";
+alertBox.style.color = "red";
+}
+else if(trs < 85){
+alertBox.innerText = "Average";
+alertBox.style.color = "orange";
+}
+else{
+alertBox.innerText = "Excellent";
+alertBox.style.color = "lightgreen";
+}
 
 currentData = {
 date: document.getElementById("date").value,
@@ -131,7 +173,6 @@ trg: trg
 
 }
 
-// SAVE
 function saveData(){
 if(!currentData){alert("Calculate first"); return;}
 historyData.push(currentData);
@@ -139,7 +180,6 @@ localStorage.setItem("trsData", JSON.stringify(historyData));
 render();
 }
 
-// RENDER
 function render(){
 let ul = document.getElementById("history");
 ul.innerHTML = "";
@@ -152,14 +192,18 @@ ${d.date} | ${d.ligne} | ${d.shift} | TRS ${d.trs.toFixed(2)}%
 });
 }
 
-// DELETE
 function del(i){
 historyData.splice(i,1);
 localStorage.setItem("trsData", JSON.stringify(historyData));
 render();
 }
 
-// EXPORT
+function clearHistory(){
+historyData = [];
+localStorage.removeItem("trsData");
+render();
+}
+
 function exportCSV(){
 
 if(historyData.length === 0){
@@ -182,7 +226,6 @@ a.click();
 
 }
 
-// RESET
 function resetForm(){
 document.querySelectorAll("input").forEach(i=>i.value="");
 document.getElementById("trs").innerText = "0";
@@ -190,13 +233,13 @@ document.getElementById("trg").innerText = "0";
 document.getElementById("alert").innerText = "";
 }
 
-// EVENTS (🔥 الحل)
 document.getElementById("calcBtn").addEventListener("click", calc);
 document.getElementById("saveBtn").addEventListener("click", saveData);
 document.getElementById("exportBtn").addEventListener("click", exportCSV);
 document.getElementById("resetBtn").addEventListener("click", resetForm);
 
-// LOAD
+document.getElementById("date").valueAsDate = new Date();
+
 render();
 
 </script></body>
